@@ -10,7 +10,7 @@ const router = Router();
 // ==========================================
 // SERVICE 1: Investor Pitch Deck (1.00 USDT)
 // ==========================================
-router.post('/deck/generate', requirePayment({ amount: '1.000000' }), async (req: Request, res: Response) => {
+router.all('/deck/generate', requirePayment({ amount: 1.000000 }), async (req: Request, res: Response) => {
     try {
         const prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
@@ -37,7 +37,7 @@ router.post('/deck/generate', requirePayment({ amount: '1.000000' }), async (req
 // ==========================================
 // SERVICE 2: Executive One-Pager (0.05 USDT)
 // ==========================================
-router.post('/deck/onepager', requirePayment({ amount: '0.050000' }), async (req: Request, res: Response) => {
+router.all('/deck/onepager', requirePayment({ amount: 0.050000 }), async (req: Request, res: Response) => {
     try {
         const prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
@@ -63,7 +63,7 @@ router.post('/deck/onepager', requirePayment({ amount: '0.050000' }), async (req
 // ==========================================
 // SERVICE 3: Financial Model (0.10 USDT)
 // ==========================================
-router.post('/deck/financials', requirePayment({ amount: '0.100000' }), async (req: Request, res: Response) => {
+router.all('/deck/financials', requirePayment({ amount: 0.100000 }), async (req: Request, res: Response) => {
     try {
         const prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });

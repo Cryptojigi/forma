@@ -43,7 +43,14 @@ const RECEIVING_WALLET_LC = RECEIVING_WALLET.toLowerCase();
 const ADMIN_BYPASS_KEY = process.env.ADMIN_BYPASS_KEY || '';
 const USDT_XLAYER = process.env.USDT_CONTRACT_ADDRESS || '0x779ded0c9e1022225f8e0630b35a9b54be713736';
 const CHAIN_ID = process.env.CHAIN_ID || '196';
+const RESOURCE_URL = process.env.RESOURCE_URL || 'https://forma.onchain.app';
 const USDT_DECIMALS = 6;
+
+// ---------------------------------------------------------------------------
+// Nonce Replay Protection
+// ---------------------------------------------------------------------------
+
+const processedNonces = new Set<string>();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -91,8 +98,8 @@ function buildChallenge(amount: number): PaymentChallenge {
     return {
         x402Version: 2,
         resource: {
-            url: "https://aegis-dzyd.onrender.com",
-            description: "Aegis AI Smart Contract Audit and Guardrails"
+            url: RESOURCE_URL,
+            description: "Forma AI Autonomous Asset Generation"
         },
         accepts: [
             {
@@ -302,6 +309,16 @@ export function requirePayment(config: PaymentConfig) {
                 let recovered: string | null = null;
                 let lastError: string = '';
 
+                // Replay Protection Check
+                const nonceValue = messageFull.nonce;
+                if (processedNonces.has(nonceValue)) {
+                    console.error(`[x402] Replay detected for nonce: ${nonceValue}`);
+                    return res.status(402).json({
+                        error: 'Payment authorization has already been used',
+                        code: 'PAYMENT_REPLAY',
+                    });
+                }
+
                 for (const domain of EIP712_DOMAINS) {
                     for (const typesDef of eip712TypesList) {
                         try {
@@ -309,6 +326,7 @@ export function requirePayment(config: PaymentConfig) {
                             recovered = ethers.verifyTypedData(domain, typesDef, msg, signature);
                             if (recovered.toLowerCase() === auth.from.toLowerCase()) {
                                 console.log(`[x402] TransferWithAuthorization Verified ✅ (domain: ${domain.name} v${domain.version}, fields: ${typesDef.TransferWithAuthorization.length})`);
+                                processedNonces.add(nonceValue);
                                 return next();
                             }
                             lastError = `Recovered ${recovered} but expected ${auth.from}`;
@@ -337,7 +355,7 @@ export function requirePayment(config: PaymentConfig) {
             const base64Challenge = Buffer.from(challengeJson).toString('base64');
 
             res.setHeader('PAYMENT-REQUIRED', base64Challenge);
-            res.setHeader('WWW-Authenticate', `Payment realm="Aegis", intent="charge"`);
+            res.setHeader('WWW-Authenticate', `Payment realm="Forma", intent="charge"`);
 
             res.status(402).json(challenge);
             return;
