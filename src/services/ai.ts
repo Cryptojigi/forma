@@ -9,7 +9,7 @@ const openai = new OpenAI({
     apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
-const MODEL = 'deepseek-chat';
+const MODEL = 'deepseek-v4-flash';
 
 /**
  * Generic wrapper to call DeepSeek with retry logic for strict JSON output.
