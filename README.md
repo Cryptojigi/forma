@@ -85,7 +85,6 @@ npm install
 Create a `.env` file in the root directory:
 ```env
 PORT=3002
-ADMIN_BYPASS_KEY=your_secure_bypass_key_here
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
 ```
 
@@ -99,13 +98,12 @@ The server will start at `http://localhost:3002`.
 
 ## 🧪 Testing the API
 
-Forma includes an **Admin Bypass Header** (`x-admin-bypass`) so you can test file generation locally without issuing live on-chain USDT payments.
+Forma endpoints return HTTP 402 Payment Required challenges per the OKX x402 specification. For testing purposes, you must provide valid EIP-3009 signatures.
 
 ### Generate Investor Pitch Deck (`.pptx`)
 ```bash
 curl -X POST http://localhost:3002/api/deck/generate \
   -H "Content-Type: application/json" \
-  -H "x-admin-bypass: your_secure_bypass_key_here" \
   -d '{"prompt": "A decentralized lending protocol on X Layer with automated liquidation vaults"}'
 ```
 
@@ -113,7 +111,6 @@ curl -X POST http://localhost:3002/api/deck/generate \
 ```bash
 curl -X POST http://localhost:3002/api/deck/onepager \
   -H "Content-Type: application/json" \
-  -H "x-admin-bypass: your_secure_bypass_key_here" \
   -d '{"prompt": "An AI-powered automated yield aggregator on X Layer"}'
 ```
 
@@ -121,7 +118,6 @@ curl -X POST http://localhost:3002/api/deck/onepager \
 ```bash
 curl -X POST http://localhost:3002/api/deck/financials \
   -H "Content-Type: application/json" \
-  -H "x-admin-bypass: your_secure_bypass_key_here" \
   -d '{"prompt": "Tokenomics for FORMA token with 1,000,000,000 total supply"}'
 ```
 
