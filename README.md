@@ -1,7 +1,6 @@
 # 🚀 FORMA — Autonomous Executive & Investor Asset Agent
 
-> **OKX AI Hackathon Submission** | *Category 1: Professional Asset Creation*  
-> Powered by **OKX Onchain OS**, **x402 Payment Protocol** (X Layer), and **DeepSeek AI**.
+> **Built for OKX hackathon**
 
 ![OKX X-Layer](https://img.shields.io/badge/Network-X%20Layer%20Mainnet-blue?style=for-the-badge)
 ![x402 Protocol](https://img.shields.io/badge/Protocol-x402%20v2%20(EIP--3009)-green?style=for-the-badge)
@@ -146,17 +145,6 @@ okx-a2a doctor --fix
 
 ---
 
-## 🏆 Hackathon Alignment
-
-- **Category**: Category 1 — Professional Asset Creation
-- **Target Prizes**:
-  - **Finance Copilot** ($2,500)
-  - **Creative Genius** (Up to $10,000)
-  - **Software Utility** ($2,500)
-  - **Revenue Rocket** (Up to $10,000)
-
----
-
 ## 📜 License
 
-MIT License. Designed and developed for the OKX AI Hackathon.
+MIT License. Built for OKX hackathon.
