@@ -68,12 +68,21 @@ export type DeckBlueprint = z.infer<typeof DeckBlueprintSchema>;
 
 export const OnePagerBlueprintSchema = z.object({
     project_name: z.string(),
-    executive_summary: z.string(),
-    problem_statement: z.string(),
-    solution: z.string(),
-    market_opportunity: z.string(),
-    token_utility: z.string(),
-    team_or_roadmap: z.string(),
+    theme: z.object({
+        primary: z.string().default("#0F172A"),
+        accent: z.string().default("#2563EB"),
+        font_family: z.enum(["Helvetica", "Courier", "Times-Roman"]).default("Helvetica"),
+        base_font_size: z.number().default(10.5)
+    }).default({}),
+    sections: z.array(z.object({
+        title: z.string(),
+        type: z.enum(['text', 'table']),
+        content: z.string().optional(),
+        table: z.object({
+            headers: z.array(z.string()),
+            rows: z.array(z.array(z.string()))
+        }).optional()
+    }))
 });
 export type OnePagerBlueprint = z.infer<typeof OnePagerBlueprintSchema>;
 
@@ -103,7 +112,7 @@ export async function generateDeckBlueprint(prompt: string): Promise<DeckBluepri
 }
 
 export async function generateOnePagerBlueprint(prompt: string): Promise<OnePagerBlueprint> {
-    return generateJson<OnePagerBlueprint>(ONEPAGER_SYSTEM_PROMPT, prompt, OnePagerBlueprintSchema);
+    return generateJson<OnePagerBlueprint>(ONEPAGER_SYSTEM_PROMPT, prompt, OnePagerBlueprintSchema as any);
 }
 
 export async function generateFinancialBlueprint(prompt: string): Promise<FinancialBlueprint> {

@@ -12,8 +12,12 @@ const router = Router();
 // ==========================================
 router.all('/deck/generate', requirePayment({ amount: 1.000000 }), async (req: Request, res: Response) => {
     try {
-        const prompt = req.body.prompt;
+        let prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+        
+        if (req.body.context) {
+            prompt += `\n\nADDITIONAL CONTEXT PROVIDED BY USER:\n${req.body.context}`;
+        }
 
         console.log('[Forma] Calling DeepSeek for PPTX JSON Blueprint...');
         const blueprint = await generateDeckBlueprint(prompt);
@@ -39,8 +43,12 @@ router.all('/deck/generate', requirePayment({ amount: 1.000000 }), async (req: R
 // ==========================================
 router.all('/deck/onepager', requirePayment({ amount: 0.050000 }), async (req: Request, res: Response) => {
     try {
-        const prompt = req.body.prompt;
+        let prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+        if (req.body.context) {
+            prompt += `\n\nADDITIONAL CONTEXT PROVIDED BY USER:\n${req.body.context}`;
+        }
 
         console.log('[Forma] Calling DeepSeek for PDF JSON Blueprint...');
         const blueprint = await generateOnePagerBlueprint(prompt);
@@ -65,8 +73,12 @@ router.all('/deck/onepager', requirePayment({ amount: 0.050000 }), async (req: R
 // ==========================================
 router.all('/deck/financials', requirePayment({ amount: 0.100000 }), async (req: Request, res: Response) => {
     try {
-        const prompt = req.body.prompt;
+        let prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+        if (req.body.context) {
+            prompt += `\n\nADDITIONAL CONTEXT PROVIDED BY USER:\n${req.body.context}`;
+        }
 
         console.log('[Forma] Calling DeepSeek for Excel JSON Blueprint...');
         const blueprint = await generateFinancialBlueprint(prompt);

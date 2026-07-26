@@ -31,6 +31,10 @@ interface PaymentChallenge {
         amount: string;
         payTo: string;
         decimals?: number;
+        extra?: {
+            name: string;
+            version: string;
+        };
     }>;
 }
 
@@ -109,6 +113,7 @@ function buildChallenge(amount: number): PaymentChallenge {
                 amount: toBaseUnits(amount),
                 payTo: RECEIVING_WALLET,
                 decimals: USDT_DECIMALS,
+                extra: { name: 'USD₮0', version: '1' }
             },
         ],
     };
@@ -343,7 +348,7 @@ export function requirePayment(config: PaymentConfig) {
                     error: 'EIP-712 TransferWithAuthorization signature verification failed',
                     code: 'PAYMENT_INVALID',
                     debug: lastError,
-                    expected: { scheme: 'exact', payTo: RECEIVING_WALLET, asset: USDT_XLAYER, network: `eip155:${CHAIN_ID}` }
+                    expected: { scheme: 'exact', payTo: RECEIVING_WALLET, asset: USDT_XLAYER, network: `eip155:${CHAIN_ID}`, extra: { name: 'USD₮0', version: '1' } }
                 });
             }
 
