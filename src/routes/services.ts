@@ -48,28 +48,6 @@ endpoints.forEach(({ path, price, desc }) => {
     paymentConfig[`POST ${relativePath}`] = config;
 });
 
-// Interceptor to duplicate PAYMENT-REQUIRED header into the JSON body for OKX scanners
-router.use((req: Request, res: Response, next) => {
-    const originalJson = res.json.bind(res);
-    res.json = (body: any) => {
-        if (res.statusCode === 402) {
-            const paymentHeader = res.getHeader('PAYMENT-REQUIRED');
-            if (paymentHeader && typeof paymentHeader === 'string') {
-                try {
-                    const decoded = Buffer.from(paymentHeader, 'base64').toString('utf8');
-                    const challenge = JSON.parse(decoded);
-                    if (!body || Object.keys(body).length === 0) {
-                        return originalJson(challenge);
-                    }
-                } catch (e) {
-                    console.error("[Forma] Failed to decode PAYMENT-REQUIRED header", e);
-                }
-            }
-        }
-        return originalJson(body);
-    };
-    next();
-});
 
 router.use(paymentMiddleware(paymentConfig, resourceServer));
 
