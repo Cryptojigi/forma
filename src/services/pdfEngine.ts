@@ -36,7 +36,7 @@ export async function generatePdf(blueprint: OnePagerBlueprint): Promise<Buffer>
                 // Draw Footer on every page
                 const bottom = doc.page.height - 40;
                 doc.fontSize(8).font(fontRegular).fillColor('#94A3B8')
-                   .text(`Forma AI  ·  Confidential  ·  Page ${pageCount}`, 50, bottom, { align: 'center' });
+                   .text(`Forma AI  ·  Confidential  ·  Page ${pageCount}`, 50, bottom, { align: 'center', lineBreak: false });
 
                 // Draw Header
                 if (pageCount === 1) {
@@ -44,10 +44,10 @@ export async function generatePdf(blueprint: OnePagerBlueprint): Promise<Buffer>
                     doc.rect(0, 0, doc.page.width, 100).fill(theme.primary);
                     
                     doc.fontSize(22).font(fontBold).fillColor('#FFFFFF')
-                       .text(blueprint.project_name.toUpperCase(), 0, 35, { align: 'center' });
+                       .text(blueprint.project_name.toUpperCase(), 0, 35, { align: 'center', lineBreak: false });
                     
                     doc.fontSize(9).font(fontRegular).fillColor('#93C5FD')
-                       .text('CONFIDENTIAL INVESTMENT MEMORANDUM', 0, 65, { align: 'center', characterSpacing: 3 });
+                       .text('CONFIDENTIAL INVESTMENT MEMORANDUM', 0, 65, { align: 'center', characterSpacing: 3, lineBreak: false });
                     
                     // Reset Y for content
                     doc.y = 120;
@@ -56,7 +56,7 @@ export async function generatePdf(blueprint: OnePagerBlueprint): Promise<Buffer>
                     // Thin subtle top rule for subsequent pages
                     doc.moveTo(50, 40).lineTo(545, 40).lineWidth(0.5).strokeColor('#CBD5E1').stroke();
                     doc.fontSize(8).font(fontRegular).fillColor('#64748B')
-                       .text(`${blueprint.project_name.toUpperCase()} - Page ${pageCount}`, 50, 25, { align: 'right' });
+                       .text(`${blueprint.project_name.toUpperCase()} - Page ${pageCount}`, 50, 25, { align: 'right', lineBreak: false });
                     
                     // Reset Y for content
                     doc.y = 60;
