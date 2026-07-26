@@ -1,16 +1,58 @@
 import { Router, Request, Response } from 'express';
-import { requirePayment } from '../middleware/x402';
 import { generateDeckBlueprint, generateOnePagerBlueprint, generateFinancialBlueprint } from '../services/ai';
 import { generatePptx } from '../services/pptEngine';
 import { generatePdf } from '../services/pdfEngine';
 import { generateXlsx } from '../services/excelEngine';
+import { paymentMiddleware, x402ResourceServer } from '@okxweb3/x402-express';
+import { ExactEvmScheme } from '@okxweb3/x402-evm/exact/server';
+import { OKXFacilitatorClient } from '@okxweb3/x402-core';
 
 const router = Router();
+const CHAIN_ID = process.env.CHAIN_ID || '196';
+const NETWORK = `eip155:${CHAIN_ID}`;
+const RECEIVING_WALLET = process.env.RECEIVING_WALLET_ADDRESS || '0x';
+
+// Setup Facilitator
+const facilitatorClient = new OKXFacilitatorClient({
+    apiKey: process.env.OKX_API_KEY || '',
+    secretKey: process.env.OKX_SECRET_KEY || '',
+    passphrase: process.env.OKX_PASSPHRASE || '',
+});
+
+// Setup Resource Server
+const resourceServer = new x402ResourceServer(facilitatorClient);
+resourceServer.register(NETWORK as `${string}:${string}`, new ExactEvmScheme());
+
+// Define X402 Payment Pricing
+const paymentConfig: Record<string, any> = {
+    "POST /api/deck/generate": {
+        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price: "$1.00" }],
+        description: "Investor Pitch Deck",
+        mimeType: "application/json"
+    },
+    "POST /api/deck/onepager": {
+        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price: "$0.05" }],
+        description: "Executive One-Pager",
+        mimeType: "application/json"
+    },
+    "POST /api/deck/financials": {
+        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price: "$0.10" }],
+        description: "Financial Model",
+        mimeType: "application/json"
+    }
+};
+
+// Also map without /api in case the middleware looks at router-relative paths
+paymentConfig["POST /deck/generate"] = paymentConfig["POST /api/deck/generate"];
+paymentConfig["POST /deck/onepager"] = paymentConfig["POST /api/deck/onepager"];
+paymentConfig["POST /deck/financials"] = paymentConfig["POST /api/deck/financials"];
+
+router.use(paymentMiddleware(paymentConfig, resourceServer));
 
 // ==========================================
-// SERVICE 1: Investor Pitch Deck (1.00 USDT)
+// SERVICE 1: Investor Pitch Deck
 // ==========================================
-router.all('/deck/generate', requirePayment({ amount: 1.000000 }), async (req: Request, res: Response) => {
+router.post('/deck/generate', async (req: Request, res: Response) => {
     try {
         let prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
@@ -28,7 +70,6 @@ router.all('/deck/generate', requirePayment({ amount: 1.000000 }), async (req: R
         res.status(200).json({
             status: 'success',
             fileName: 'PitchDeck.pptx',
-            // Return base64 for instant delivery
             fileData: buffer.toString('base64'),
             metadata: { slidesGenerated: blueprint.slides.length }
         });
@@ -39,9 +80,9 @@ router.all('/deck/generate', requirePayment({ amount: 1.000000 }), async (req: R
 });
 
 // ==========================================
-// SERVICE 2: Executive One-Pager (0.05 USDT)
+// SERVICE 2: Executive One-Pager
 // ==========================================
-router.all('/deck/onepager', requirePayment({ amount: 0.050000 }), async (req: Request, res: Response) => {
+router.post('/deck/onepager', async (req: Request, res: Response) => {
     try {
         let prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
@@ -69,9 +110,9 @@ router.all('/deck/onepager', requirePayment({ amount: 0.050000 }), async (req: R
 });
 
 // ==========================================
-// SERVICE 3: Financial Model (0.10 USDT)
+// SERVICE 3: Financial Model
 // ==========================================
-router.all('/deck/financials', requirePayment({ amount: 0.100000 }), async (req: Request, res: Response) => {
+router.post('/deck/financials', async (req: Request, res: Response) => {
     try {
         let prompt = req.body.prompt;
         if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
