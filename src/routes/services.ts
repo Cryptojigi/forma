@@ -23,29 +23,53 @@ const facilitatorClient = new OKXFacilitatorClient({
 const resourceServer = new x402ResourceServer(facilitatorClient);
 resourceServer.register(NETWORK as `${string}:${string}`, new ExactEvmScheme());
 
-// Define X402 Payment Pricing
-const paymentConfig: Record<string, any> = {
-    "POST /api/deck/generate": {
-        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price: "$1.00" }],
-        description: "Investor Pitch Deck",
-        mimeType: "application/json"
-    },
-    "POST /api/deck/onepager": {
-        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price: "$0.05" }],
-        description: "Executive One-Pager",
-        mimeType: "application/json"
-    },
-    "POST /api/deck/financials": {
-        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price: "$0.10" }],
-        description: "Financial Model",
-        mimeType: "application/json"
-    }
-};
+const paymentConfig: Record<string, any> = {};
 
-// Also map without /api in case the middleware looks at router-relative paths
-paymentConfig["POST /deck/generate"] = paymentConfig["POST /api/deck/generate"];
-paymentConfig["POST /deck/onepager"] = paymentConfig["POST /api/deck/onepager"];
-paymentConfig["POST /deck/financials"] = paymentConfig["POST /api/deck/financials"];
+const endpoints = [
+    { path: '/api/deck/generate', price: '$1.00', desc: 'Investor Pitch Deck' },
+    { path: '/api/deck/onepager', price: '$0.05', desc: 'Executive One-Pager' },
+    { path: '/api/deck/financials', price: '$0.10', desc: 'Financial Model' }
+];
+
+endpoints.forEach(({ path, price, desc }) => {
+    const config = {
+        accepts: [{ scheme: "exact", network: NETWORK, payTo: RECEIVING_WALLET, price }],
+        description: desc,
+        mimeType: "application/json"
+    };
+    
+    // Register for both GET (for OKX scanner) and POST (for actual usage)
+    paymentConfig[`GET ${path}`] = config;
+    paymentConfig[`POST ${path}`] = config;
+    
+    // Also map without /api in case the middleware uses router-relative paths
+    const relativePath = path.replace('/api', '');
+    paymentConfig[`GET ${relativePath}`] = config;
+    paymentConfig[`POST ${relativePath}`] = config;
+});
+
+// Interceptor to duplicate PAYMENT-REQUIRED header into the JSON body for OKX scanners
+router.use((req: Request, res: Response, next) => {
+    const originalJson = res.json.bind(res);
+    res.json = (body: any) => {
+        if (res.statusCode === 402) {
+            const paymentHeader = res.getHeader('PAYMENT-REQUIRED');
+            if (paymentHeader && typeof paymentHeader === 'string') {
+                try {
+                    const decoded = Buffer.from(paymentHeader, 'base64').toString('utf8');
+                    const challenge = JSON.parse(decoded);
+                    if (!body || Object.keys(body).length === 0) {
+                        return originalJson(challenge);
+                    }
+                } catch (e) {
+                    console.error("[Forma] Failed to decode PAYMENT-REQUIRED header", e);
+                }
+            }
+        }
+        return originalJson(body);
+    };
+    next();
+});
 
 router.use(paymentMiddleware(paymentConfig, resourceServer));
 

@@ -33,10 +33,17 @@ export async function generatePdf(blueprint: OnePagerBlueprint): Promise<Buffer>
             doc.on('pageAdded', () => {
                 pageCount++;
                 
+                // Store original bottom margin and temporarily disable it
+                const originalBottom = doc.page.margins.bottom;
+                doc.page.margins.bottom = 0;
+                
                 // Draw Footer on every page
                 const bottom = doc.page.height - 40;
                 doc.fontSize(8).font(fontRegular).fillColor('#94A3B8')
                    .text(`Forma AI  ·  Confidential  ·  Page ${pageCount}`, 50, bottom, { align: 'center', lineBreak: false });
+
+                // Restore bottom margin
+                doc.page.margins.bottom = originalBottom;
 
                 // Draw Header
                 if (pageCount === 1) {
