@@ -36,7 +36,7 @@ Forma enforces a strict **Separation of Concerns** between AI content generation
 ```
 ┌─────────────────┐       1. Prompt       ┌────────────────────────┐       2. Generate JSON       ┌────────────────────────┐
 │   OKX Client /  │ ────────────────────► │  Forma Express Backend │ ───────────────────────────► │  DeepSeek AI Engine    │
-│   User Agent    │ ◄──────────────────── │   (x402 Middleware)    │ ◄─────────────────────────── │   (deepseek-chat)      │
+│   User Agent    │ ◄──────────────────── │ (@okxweb3/x402-express)│ ◄─────────────────────────── │   (deepseek-chat)      │
 └─────────────────┘       5. Deliver      └───────────┬────────────┘       3. JSON Blueprint      └────────────────────────┘
                        Binary File                    │
                      (base64 stream)                  ▼
@@ -51,7 +51,7 @@ Forma enforces a strict **Separation of Concerns** between AI content generation
 
 1. **AI Intelligence Layer (`src/services/ai.ts`)**: DeepSeek generates strict JSON blueprints (slide content, sections, vesting rules, layout hints) with built-in retry mechanisms and high-density prompts.
 2. **File Rendering Layer (`src/services/*Engine.ts`)**: Hardcoded TypeScript design templates (`pptxgenjs`, `pdfkit`, `exceljs`) convert the JSON blueprints into native, beautiful binary files. **The code controls the design, the AI controls the content.**
-3. **x402 Payment Layer (`src/middleware/x402.ts`)**: Off-chain verification of EIP-712 typed data signatures (`transferWithAuthorization`) for X Layer USDT (`0x779ded0c9e1022225f8e0630b35a9b54be713736`).
+3. **x402 Payment Layer (`@okxweb3/x402-express`)**: Official OKX Web3 Payment SDK for seamless EIP-3009 challenge generation, automatic pricing resolution, and on-chain payment settlement.
 
 ---
 
@@ -59,7 +59,7 @@ Forma enforces a strict **Separation of Concerns** between AI content generation
 
 - **Runtime & Language**: Node.js, Express, TypeScript (ES2020)
 - **AI Model**: DeepSeek API (`deepseek-chat`) via OpenAI Node SDK
-- **Payment Verification**: `ethers.js` (EIP-3009 verification for X Layer USDT)
+- **Payment Verification**: Official OKX Onchain OS Payment SDK (`@okxweb3/x402-express`, `@okxweb3/x402-core`)
 - **File Engines**:
   - `pptxgenjs` — Native PowerPoint presentation builder
   - `pdfkit` — Vector PDF document generator
@@ -85,6 +85,14 @@ Create a `.env` file in the root directory:
 ```env
 PORT=3002
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
+
+# OKX API Credentials
+OKX_API_KEY=your_okx_api_key
+OKX_SECRET_KEY=your_okx_secret_key
+OKX_PASSPHRASE=your_okx_passphrase
+
+# Wallet Config
+RECEIVING_WALLET_ADDRESS=your_wallet_address
 ```
 
 ### 2. Run the Development Server
